@@ -35,19 +35,25 @@ def get_session():
     return tf.Session(config=config)
 
 
-def create_model(num_classes, num_features = 64):
+def create_model(num_classes):
     image = keras.layers.Input((None, None, 3))
-    return ResNet18RetinaNet(image, num_classes=num_classes, features=num_features)
+    return ResNet18RetinaNet(image, num_classes=num_classes)
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Simple training script for object detection from a CSV file.')
-    
+
     parser.add_argument(
         '--batch-size', help='Size of the batches.', default=1, type=int)
     parser.add_argument(
-            '--fsize', help='ResNet feature size', default=64, type=int)
+        '--fsize', help='ResNet feature size', default=64, type=int)
+    parser.add_argument(
+        '--train_path', help='train CSV File', default='train.csv', type=str)
+
+    parser.add_argument('--val_path', help='val CSV File', default='val.csv', type=str)
+
+    parser.add_argument('--classes_path', help='classes CSV File', default='classes.csv', type=str)
 
     return parser.parse_args()
 
@@ -56,9 +62,9 @@ if __name__ == '__main__':
     # parse arguments
     args = parse_args()
 
-    train_path = "/home/aragon/workspace/datasets/obj_detection_rdc2/train_linux.csv"
-    classes = "/home/aragon/workspace/datasets/obj_detection_rdc2/classes.csv"
-    val_path = "/home/aragon/workspace/datasets/obj_detection_rdc2/val_linux.csv"
+    train_path = os.path.abspath(args.train_path)
+    classes = os.path.abspath(args.classes_path)
+    val_path = os.path.abspath(args.val_path)
 
     # create image data generator objects
     train_image_data_generator = keras.preprocessing.image.ImageDataGenerator(
@@ -87,12 +93,12 @@ if __name__ == '__main__':
 
     # create the model
     print('Creating model, this may take a second...')
-    model = create_model(num_classes=num_classes, num_features=args.fsize)
+    model = create_model(num_classes=num_classes)
 
     # compile model (note: set loss to None since loss is added inside layer)
     model.compile(
         loss={
-            'regression'    : keras_retinanet.losses.smooth_l1(),
+            'regression': keras_retinanet.losses.smooth_l1(),
             'classification': keras_retinanet.losses.focal()
         },
         optimizer=keras.optimizers.adam(lr=2e-5, clipnorm=1e-4)

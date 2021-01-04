@@ -25,16 +25,16 @@ import csv
 
 class CSVGenerator(Generator):
     def __init__(
-        self,
-        csv_data_file,
-        csv_class_file,
-        *args,
-        **kwargs
+            self,
+            csv_data_file,
+            csv_class_file,
+            *args,
+            **kwargs
     ):
-        self.csv_data_file        = csv_data_file
+        self.csv_data_file = csv_data_file
 
-        self.image_names          = []
-        self.image_data           = {}
+        self.image_names = []
+        self.image_data = {}
 
         # parse the provided class file
         self.classes = {}
@@ -52,7 +52,8 @@ class CSVGenerator(Generator):
 
                 # check if the current class name is correctly present
                 if classname not in self.classes:
-                    raise ValueError('found class name in data file not present in class file: {}'.format(classname))
+                    raise ValueError(
+                        f'found class name {classname} in data file not present in class file in row: {row}')
 
                 if img_filepath not in self.image_names:
                     self.image_names.append(img_filepath)
@@ -98,7 +99,6 @@ class CSVGenerator(Generator):
         boxes = np.zeros((len(annots), 5))
 
         for idx, annot in enumerate(annots):
-
             class_name = annot['class']
 
             boxes[idx, 0] = float(annot['x1'])
