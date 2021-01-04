@@ -28,6 +28,8 @@ import keras_retinanet
 import pickle
 import matplotlib.pyplot as plt
 
+import datetime
+
 
 def get_session():
     config = tf.ConfigProto()
@@ -106,7 +108,7 @@ if __name__ == '__main__':
     # print model summary
     print(model.summary())
 
-    model_name = "resnet_f{}_s8_rdc2".format(args.fsize)
+    model_name = "resnet_f{}_s8_rdc2".format(datetime.datetime.time())
     model_dir = os.path.join("snapshots", model_name)
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
