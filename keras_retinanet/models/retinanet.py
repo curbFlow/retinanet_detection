@@ -23,32 +23,32 @@ import numpy as np
 import keras_resnet
 
 custom_objects = {
-    'UpsampleLike'          : keras_retinanet.layers.UpsampleLike,
-    'PriorProbability'      : keras_retinanet.initializers.PriorProbability,
-    'RegressBoxes'          : keras_retinanet.layers.RegressBoxes,
-    'NonMaximumSuppression' : keras_retinanet.layers.NonMaximumSuppression,
-    'Anchors'               : keras_retinanet.layers.Anchors,
-    '_smooth_l1'            : keras_retinanet.losses.smooth_l1(),
-    '_focal'                : keras_retinanet.losses.focal(),
-    'BatchNormalization'    : keras_resnet.layers.BatchNormalization,
+    'UpsampleLike': keras_retinanet.layers.UpsampleLike,
+    'PriorProbability': keras_retinanet.initializers.PriorProbability,
+    'RegressBoxes': keras_retinanet.layers.RegressBoxes,
+    'NonMaximumSuppression': keras_retinanet.layers.NonMaximumSuppression,
+    'Anchors': keras_retinanet.layers.Anchors,
+    '_smooth_l1': keras_retinanet.losses.smooth_l1(),
+    '_focal': keras_retinanet.losses.focal(),
+    'BatchNormalization': keras_resnet.layers.BatchNormalization,
 }
 
 
 def default_classification_model(
-    num_classes,
-    num_anchors,
-    pyramid_feature_size=64,
-    prior_probability=0.01,
-    classification_feature_size=64,
-    name='classification_submodel'
+        num_classes,
+        num_anchors,
+        pyramid_feature_size=64,
+        prior_probability=0.01,
+        classification_feature_size=64,
+        name='classification_submodel'
 ):
     options = {
-        'kernel_size' : 3,
-        'strides'     : 1,
-        'padding'     : 'same',
+        'kernel_size': 3,
+        'strides': 1,
+        'padding': 'same',
     }
 
-    inputs  = keras.layers.Input(shape=(None, None, pyramid_feature_size))
+    inputs = keras.layers.Input(shape=(None, None, pyramid_feature_size))
     outputs = inputs
     for i in range(4):
         outputs = keras.layers.Conv2D(
@@ -61,7 +61,7 @@ def default_classification_model(
         )(outputs)
         outputs = BatchNormalization(axis=-1, name='pyramid_classification_{}_bn'.format(i))(outputs)
         outputs = keras.layers.Activation('relu', name='pyramid_classification_{}_relu'.format(i))(outputs)
-        outputs=keras.layers.Dropout(0.3)(outputs)
+        outputs = keras.layers.Dropout(0.3)(outputs)
 
     outputs = keras.layers.Conv2D(
         filters=num_classes * num_anchors,
@@ -77,19 +77,20 @@ def default_classification_model(
     return keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
 
-def default_regression_model(num_anchors, pyramid_feature_size=64, regression_feature_size=64, name='regression_submodel'):
+def default_regression_model(num_anchors, pyramid_feature_size=64, regression_feature_size=64,
+                             name='regression_submodel'):
     # All new conv layers except the final one in the
     # RetinaNet (classification) subnets are initialized
     # with bias b = 0 and a Gaussian weight fill with stddev = 0.01.
     options = {
-        'kernel_size'        : 3,
-        'strides'            : 1,
-        'padding'            : 'same',
-        'kernel_initializer' : keras.initializers.glorot_uniform(),
-        'bias_initializer'   : 'zeros'
+        'kernel_size': 3,
+        'strides': 1,
+        'padding': 'same',
+        'kernel_initializer': keras.initializers.glorot_uniform(),
+        'bias_initializer': 'zeros'
     }
 
-    inputs  = keras.layers.Input(shape=(None, None, pyramid_feature_size))
+    inputs = keras.layers.Input(shape=(None, None, pyramid_feature_size))
     outputs = inputs
     for i in range(4):
         outputs = keras.layers.Conv2D(
@@ -100,7 +101,7 @@ def default_regression_model(num_anchors, pyramid_feature_size=64, regression_fe
         )(outputs)
         outputs = BatchNormalization(axis=-1, name='pyramid_regression_{}_bn'.format(i))(outputs)
         outputs = keras.layers.Activation('relu', name='pyramid_regression_{}_relu'.format(i))(outputs)
-        outputs=keras.layers.Dropout(0.3)(outputs)
+        outputs = keras.layers.Dropout(0.3)(outputs)
 
     outputs = keras.layers.Conv2D(num_anchors * 4, name='pyramid_regression', **options)(outputs)
     outputs = keras.layers.Reshape((-1, 4), name='pyramid_regression_reshape')(outputs)
@@ -109,13 +110,13 @@ def default_regression_model(num_anchors, pyramid_feature_size=64, regression_fe
 
 def __create_pyramid_features(C3, C4, C5, feature_size=64):
     # upsample C5 to get P5 from the FPN paper
-    P5           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='P5')(C5)
+    P5 = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='P5')(C5)
     P5_upsampled = keras_retinanet.layers.UpsampleLike(name='P5_upsampled')([P5, C4])
 
     # add P5 elementwise to C4
-    P4           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C4_reduced')(C4)
-    P4           = keras.layers.Add(name='P4_merged')([P5_upsampled, P4])
-    P4           = keras.layers.Conv2D(feature_size, kernel_size=3, strides=1, padding='same', name='P4')(P4)
+    P4 = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C4_reduced')(C4)
+    P4 = keras.layers.Add(name='P4_merged')([P5_upsampled, P4])
+    P4 = keras.layers.Conv2D(feature_size, kernel_size=3, strides=1, padding='same', name='P4')(P4)
     P4_upsampled = keras_retinanet.layers.UpsampleLike(name='P4_upsampled')([P4, C3])
 
     # add P4 elementwise to C3
@@ -135,20 +136,20 @@ def __create_pyramid_features(C3, C4, C5, feature_size=64):
 
 class AnchorParameters:
     def __init__(self, sizes, strides, ratios, scales):
-        self.sizes   = sizes
+        self.sizes = sizes
         self.strides = strides
-        self.ratios  = ratios
-        self.scales  = scales
+        self.ratios = ratios
+        self.scales = scales
 
     def num_anchors(self):
         return len(self.ratios) * len(self.scales)
 
 
 AnchorParameters.default = AnchorParameters(
-    sizes   = [32, 64, 128, 256, 512],
-    strides = [8, 16, 32, 64, 128],
-    ratios  = np.array([0.5, 1, 2], keras.backend.floatx()),
-    scales  = np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], keras.backend.floatx()),
+    sizes=[32, 64, 128, 256, 512],
+    strides=[8, 16, 32, 64, 128],
+    ratios=np.array([0.5, 1, 2], keras.backend.floatx()),
+    scales=np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], keras.backend.floatx()),
 )
 
 
@@ -181,13 +182,13 @@ def __build_anchors(anchor_parameters, features):
 
 
 def retinanet(
-    inputs,
-    backbone,
-    num_classes,
-    anchor_parameters       = AnchorParameters.default,
-    create_pyramid_features = __create_pyramid_features,
-    submodels               = None,
-    name                    = 'retinanet'
+        inputs,
+        backbone,
+        num_classes,
+        anchor_parameters=AnchorParameters.default,
+        create_pyramid_features=__create_pyramid_features,
+        submodels=None,
+        name='retinanet'
 ):
     if submodels is None:
         submodels = default_submodels(num_classes, anchor_parameters)
@@ -210,8 +211,8 @@ def retinanet_bbox(inputs, num_classes, nms=True, name='retinanet-bbox', *args, 
     model = retinanet(inputs=inputs, num_classes=num_classes, *args, **kwargs)
 
     # we expect the anchors, regression and classification values as first output
-    anchors        = model.outputs[0]
-    regression     = model.outputs[1]
+    anchors = model.outputs[0]
+    regression = model.outputs[1]
     classification = model.outputs[2]
     if len(model.outputs) > 3:
         other = keras.layers.Concatenate(axis=2, name='other')(model.outputs[2:])
@@ -219,7 +220,7 @@ def retinanet_bbox(inputs, num_classes, nms=True, name='retinanet-bbox', *args, 
         other = None
 
     # apply predicted regression to anchors
-    boxes      = keras_retinanet.layers.RegressBoxes(name='boxes')([anchors, regression])
+    boxes = keras_retinanet.layers.RegressBoxes(name='boxes')([anchors, regression])
     detections = keras.layers.Concatenate(axis=2)([boxes, classification] + ([other] if other is not None else []))
 
     # additionally apply non maximum suppression
