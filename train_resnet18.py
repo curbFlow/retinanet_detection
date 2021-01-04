@@ -47,8 +47,6 @@ def parse_args():
     parser.add_argument(
         '--batch-size', help='Size of the batches.', default=1, type=int)
     parser.add_argument(
-        '--fsize', help='ResNet feature size', default=64, type=int)
-    parser.add_argument(
         '--train_path', help='train CSV File', default='train.csv', type=str)
 
     parser.add_argument('--val_path', help='val CSV File', default='val.csv', type=str)
