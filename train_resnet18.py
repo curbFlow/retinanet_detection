@@ -106,7 +106,7 @@ if __name__ == '__main__':
     )
 
     # print model summary
-    print(model.summary())
+    model.summary()
 
     model_name = "resnet_f{}_s8_rdc2".format(datetime.now().date())
     model_dir = os.path.join("snapshots", model_name)
