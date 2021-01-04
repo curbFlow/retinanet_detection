@@ -153,10 +153,13 @@ AnchorParameters.default = AnchorParameters(
 )
 
 
-def default_submodels(num_classes, anchor_parameters):
+def default_submodels(num_classes, anchor_parameters, feature_size=64):
     return [
-        ('regression', default_regression_model(anchor_parameters.num_anchors())),
-        ('classification', default_classification_model(num_classes, anchor_parameters.num_anchors()))
+        ('regression', default_regression_model(anchor_parameters.num_anchors(), pyramid_feature_size=feature_size,
+                                                regression_feature_size=feature_size)),
+        ('classification',
+         default_classification_model(num_classes, anchor_parameters.num_anchors(), pyramid_feature_size=feature_size,
+                                      classification_feature_size=feature_size))
     ]
 
 
@@ -187,18 +190,19 @@ def retinanet(
         num_classes,
         anchor_parameters=AnchorParameters.default,
         create_pyramid_features=__create_pyramid_features,
+        feature_size=64,
         submodels=None,
         name='retinanet'
 ):
     if submodels is None:
-        submodels = default_submodels(num_classes, anchor_parameters)
+        submodels = default_submodels(num_classes, anchor_parameters, feature_size)
 
     image = inputs
 
     _, C3, C4, C5 = backbone.outputs  # we ignore C2
 
     # compute pyramid features as per https://arxiv.org/abs/1708.02002
-    features = create_pyramid_features(C3, C4, C5)
+    features = create_pyramid_features(C3, C4, C5, feature_size)
 
     # for all pyramid levels, run available submodels
     pyramid = __build_pyramid(submodels, features)
@@ -207,8 +211,8 @@ def retinanet(
     return keras.models.Model(inputs=inputs, outputs=[anchors] + pyramid, name=name)
 
 
-def retinanet_bbox(inputs, num_classes, nms=True, name='retinanet-bbox', *args, **kwargs):
-    model = retinanet(inputs=inputs, num_classes=num_classes, *args, **kwargs)
+def retinanet_bbox(inputs, num_classes, nms=True, name='retinanet-bbox', feature_size=64, *args, **kwargs):
+    model = retinanet(inputs=inputs, num_classes=num_classes, feature_size=feature_size, *args, **kwargs)
 
     # we expect the anchors, regression and classification values as first output
     anchors = model.outputs[0]

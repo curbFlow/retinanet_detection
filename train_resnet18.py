@@ -37,9 +37,9 @@ def get_session():
     return tf.Session(config=config)
 
 
-def create_model(num_classes):
+def create_model(num_classes, feature_size):
     image = keras.layers.Input((None, None, 3))
-    return ResNet18RetinaNet(image, num_classes=num_classes)
+    return ResNet18RetinaNet(image, num_classes=num_classes, feature_size=feature_size)
 
 
 def parse_args():
@@ -50,6 +50,9 @@ def parse_args():
         '--batch-size', help='Size of the batches.', default=1, type=int)
     parser.add_argument(
         '--train_path', help='train CSV File', default='train.csv', type=str)
+
+    parser.add_argument(
+        '--fsize', help='RetinaNet FPN Feature Size', default=64, type=int)
 
     parser.add_argument('--val_path', help='val CSV File', default='val.csv', type=str)
 
@@ -93,7 +96,7 @@ if __name__ == '__main__':
 
     # create the model
     print('Creating model, this may take a second...')
-    model = create_model(num_classes=num_classes)
+    model = create_model(num_classes=num_classes, feature_size=args.fsize)
 
     # compile model (note: set loss to None since loss is added inside layer)
     model.compile(

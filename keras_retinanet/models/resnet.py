@@ -45,10 +45,10 @@ def ResNet50RetinaNet(inputs, num_classes, weights='imagenet', *args, **kwargs):
     return model
 
 
-def ResNet18RetinaNet(inputs, num_classes, *args, **kwargs):
+def ResNet18RetinaNet(inputs, num_classes, feature_size=64,*args, **kwargs):
     image = inputs
 
     resnet = keras_resnet.models.ResNet18(image, include_top=False, freeze_bn=False)
 
-    model = keras_retinanet.models.retinanet.retinanet_bbox(inputs=inputs, num_classes=num_classes, backbone=resnet, *args, **kwargs)
+    model = keras_retinanet.models.retinanet.retinanet_bbox(inputs=inputs, num_classes=num_classes, backbone=resnet, feature_size=feature_size,*args, **kwargs)
     return model
