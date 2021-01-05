@@ -116,7 +116,7 @@ if __name__ == '__main__':
     # print model summary
     model.summary()
 
-    model_name = f"resnet18_f{args.fsize}_time_{datetime.now().date()}"
+    model_name = f"resnet18_f{args.fsize}_start_time_{datetime.now().date()}"
     model_dir = os.path.join("snapshots", model_name)
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
