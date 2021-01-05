@@ -1,0 +1,3 @@
+[submodule "keras_resnet"]
+	path = keras_resnet
+	url = https://github.com/curbFlow/keras-resnet
