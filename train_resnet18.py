@@ -104,7 +104,6 @@ if __name__ == '__main__':
     print('Creating model, this may take a second...')
     model = create_model(num_classes=num_classes, feature_size=args.fsize)
 
-    # compile model (note: set loss to None since loss is added inside layer)
     model.compile(
         loss={
             'regression': keras_retinanet.losses.smooth_l1(),
@@ -138,7 +137,7 @@ if __name__ == '__main__':
             keras.callbacks.ModelCheckpoint(
                 checkpoint_fname, monitor='val_loss', verbose=1, save_best_only=True),
             keras.callbacks.ReduceLROnPlateau(
-                monitor='loss', factor=0.25, patience=3, verbose=1, mode='auto', epsilon=0.0001, cooldown=0,
+                monitor='loss', factor=0.25, patience=5, verbose=1, mode='auto', epsilon=0.0001, cooldown=0,
                 min_lr=1e-10),
             keras.callbacks.EarlyStopping(
                 monitor='val_loss', min_delta=0, patience=10, verbose=0, mode='auto')
