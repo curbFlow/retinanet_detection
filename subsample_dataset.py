@@ -26,6 +26,6 @@ if __name__ == '__main__':
     frames = df_keys_list[0:args.subsample_number]
     subsampled_df = dfs[df_keys_list[0]].copy()
     for frame in frames:
-        train_df = subsampled_df.append(dfs[frame])
+        subsampled_df = subsampled_df.append(dfs[frame])
 
     subsampled_df.to_csv(args.out_path, index=False, header=False)
