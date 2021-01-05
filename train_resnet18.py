@@ -104,7 +104,7 @@ if __name__ == '__main__':
             'regression': keras_retinanet.losses.smooth_l1(),
             'classification': keras_retinanet.losses.focal()
         },
-        optimizer=keras.optimizers.adam(lr=2e-5, clipnorm=1e-4)
+        optimizer=keras.optimizers.adam(lr=1e-4, clipnorm=1e-4)
         # optimizer=keras.optimizers.RMSprop(lr=1e-5)
     )
 
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     history = model.fit_generator(
         generator=train_generator,
         steps_per_epoch=train_generator.size() // (args.batch_size),
-        epochs=100,
+        epochs=1000,
         verbose=1,
         max_queue_size=20,
         validation_data=test_generator,
@@ -132,7 +132,7 @@ if __name__ == '__main__':
             keras.callbacks.ModelCheckpoint(
                 checkpoint_fname, monitor='val_loss', verbose=1, save_best_only=True),
             keras.callbacks.ReduceLROnPlateau(
-                monitor='loss', factor=0.1, patience=2, verbose=1, mode='auto', epsilon=0.0001, cooldown=0, min_lr=0),
+                monitor='loss', factor=0.25, patience=3, verbose=1, mode='auto', epsilon=0.0001, cooldown=0, min_lr=1e-10),
             keras.callbacks.EarlyStopping(
                 monitor='val_loss', min_delta=0, patience=10, verbose=0, mode='auto')
         ],
