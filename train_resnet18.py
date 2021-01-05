@@ -57,6 +57,8 @@ def parse_args():
     parser.add_argument('--val_path', help='val CSV File', default='val.csv', type=str)
 
     parser.add_argument('--classes_path', help='classes CSV File', default='classes.csv', type=str)
+    parser.add_argument('--min_side', help='image_min_side for db', default=736, type=int)
+    parser.add_argument('--max_side', help='image_max_side for db', default=1280, type=int)
 
     return parser.parse_args()
 
@@ -79,7 +81,9 @@ if __name__ == '__main__':
         csv_data_file=train_path,
         csv_class_file=classes,
         image_data_generator=train_image_data_generator,
-        batch_size=args.batch_size
+        batch_size=args.batch_size,
+        image_min_side=args.min_side,
+        image_max_side=args.max_side
     )
 
     test_image_data_generator = keras.preprocessing.image.ImageDataGenerator()
@@ -89,7 +93,9 @@ if __name__ == '__main__':
         csv_data_file=val_path,
         csv_class_file=classes,
         image_data_generator=test_image_data_generator,
-        batch_size=args.batch_size
+        batch_size=args.batch_size,
+        image_min_side=args.min_side,
+        image_max_side=args.max_side
     )
 
     num_classes = train_generator.num_classes()
@@ -132,7 +138,8 @@ if __name__ == '__main__':
             keras.callbacks.ModelCheckpoint(
                 checkpoint_fname, monitor='val_loss', verbose=1, save_best_only=True),
             keras.callbacks.ReduceLROnPlateau(
-                monitor='loss', factor=0.25, patience=3, verbose=1, mode='auto', epsilon=0.0001, cooldown=0, min_lr=1e-10),
+                monitor='loss', factor=0.25, patience=3, verbose=1, mode='auto', epsilon=0.0001, cooldown=0,
+                min_lr=1e-10),
             keras.callbacks.EarlyStopping(
                 monitor='val_loss', min_delta=0, patience=10, verbose=0, mode='auto')
         ],

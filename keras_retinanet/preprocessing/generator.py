@@ -27,28 +27,28 @@ from keras_retinanet.utils.anchors import anchor_targets
 
 class Generator(object):
     def __init__(
-        self,
-        image_data_generator,
-        batch_size=1,
-        group_method='ratio',  # one of 'none', 'random', 'ratio'
-        shuffle_groups=True,
-        image_min_side=600,
-        image_max_side=1024,
-        seed=None
+            self,
+            image_data_generator,
+            batch_size=1,
+            group_method='ratio',  # one of 'none', 'random', 'ratio'
+            shuffle_groups=True,
+            image_min_side=600,
+            image_max_side=1024,
+            seed=None
     ):
         self.image_data_generator = image_data_generator
-        self.batch_size           = int(batch_size)
-        self.group_method         = group_method
-        self.shuffle_groups       = shuffle_groups
-        self.image_min_side       = image_min_side
-        self.image_max_side       = image_max_side
+        self.batch_size = int(batch_size)
+        self.group_method = group_method
+        self.shuffle_groups = shuffle_groups
+        self.image_min_side = image_min_side
+        self.image_max_side = image_max_side
 
         if seed is None:
             seed = np.uint32((time.time() % 1)) * 1000
         np.random.seed(seed)
 
         self.group_index = 0
-        self.lock        = threading.Lock()
+        self.lock = threading.Lock()
 
         self.group_images()
 
@@ -100,7 +100,7 @@ class Generator(object):
             annotations[:, :4] *= image_scale
 
             # copy processed data back to group
-            image_group[index]       = image
+            image_group[index] = image
             annotations_group[index] = annotations
 
         return image_group, annotations_group
@@ -114,7 +114,8 @@ class Generator(object):
             order.sort(key=lambda x: self.image_aspect_ratio(x))
 
         # divide into groups, one group = one batch
-        self.groups = [[order[x % len(order)] for x in range(i, i + self.batch_size)] for i in range(0, len(order), self.batch_size)]
+        self.groups = [[order[x % len(order)] for x in range(i, i + self.batch_size)] for i in
+                       range(0, len(order), self.batch_size)]
 
         # shuffle groups
         if self.shuffle_groups:
@@ -133,7 +134,7 @@ class Generator(object):
                 random.shuffle(self.groups)
 
         # load images and annotations
-        image_group       = self.load_image_group(group_index)
+        image_group = self.load_image_group(group_index)
         annotations_group = self.load_annotations_group(group_index)
 
         # perform preprocessing steps
@@ -150,21 +151,22 @@ class Generator(object):
             image_batch[image_index, :image.shape[0], :image.shape[1], :image.shape[2]] = image
 
         # compute labels and regression targets
-        labels_group      = [None] * self.batch_size
+        labels_group = [None] * self.batch_size
         regression_group = [None] * self.batch_size
         for index, (image, annotations) in enumerate(zip(image_group, annotations_group)):
-            labels_group[index], regression_group[index] = anchor_targets(max_shape, annotations, self.num_classes(), mask_shape=image.shape)
+            labels_group[index], regression_group[index] = anchor_targets(max_shape, annotations, self.num_classes(),
+                                                                          mask_shape=image.shape)
 
             # append anchor states to regression targets (necessary for filtering 'ignore', 'positive' and 'negative' anchors)
-            anchor_states           = np.max(labels_group[index], axis=1, keepdims=True)
+            anchor_states = np.max(labels_group[index], axis=1, keepdims=True)
             regression_group[index] = np.append(regression_group[index], anchor_states, axis=1)
 
-        labels_batch     = np.zeros((self.batch_size,) + labels_group[0].shape, dtype=keras.backend.floatx())
+        labels_batch = np.zeros((self.batch_size,) + labels_group[0].shape, dtype=keras.backend.floatx())
         regression_batch = np.zeros((self.batch_size,) + regression_group[0].shape, dtype=keras.backend.floatx())
 
         # copy all labels and regression values to the batch blob
         for index, (labels, regression) in enumerate(zip(labels_group, regression_group)):
-            labels_batch[index, ...]     = labels
+            labels_batch[index, ...] = labels
             regression_batch[index, ...] = regression
 
         return image_batch, [regression_batch, labels_batch]
