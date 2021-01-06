@@ -19,8 +19,6 @@ import random
 import threading
 import time
 
-import keras
-
 from keras_retinanet.utils.image import preprocess_image, resize_image, random_transform
 from keras_retinanet.utils.anchors import anchor_targets
 

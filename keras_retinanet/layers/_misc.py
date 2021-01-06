@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras
+import tensorflow.keras.backend as K
+from tensorflow.keras.layers import Layer
 import keras_retinanet.backend
 import keras_retinanet.utils.anchors
 
 import numpy as np
 
 
-class Anchors(keras.layers.Layer):
+class Anchors(Layer):
     def __init__(self, size, stride, ratios=None, scales=None, *args, **kwargs):
         self.size   = size
         self.stride = stride
@@ -29,12 +30,12 @@ class Anchors(keras.layers.Layer):
         self.scales = scales
 
         if ratios is None:
-            self.ratios  = np.array([0.5, 1, 2], keras.backend.floatx()),
+            self.ratios  = np.array([0.5, 1, 2], K.floatx()),
         if scales is None:
-            self.scales  = np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], keras.backend.floatx()),
+            self.scales  = np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], K.floatx()),
 
         self.num_anchors = len(ratios) * len(scales)
-        self.anchors     = keras.backend.variable(keras_retinanet.utils.anchors.generate_anchors(
+        self.anchors     = K.variable(keras_retinanet.utils.anchors.generate_anchors(
             base_size=size,
             ratios=ratios,
             scales=scales,
@@ -44,11 +45,11 @@ class Anchors(keras.layers.Layer):
 
     def call(self, inputs, **kwargs):
         features = inputs
-        features_shape = keras.backend.shape(features)[1:3]
+        features_shape = K.shape(features)[1:3]
 
         # generate proposals from bbox deltas and shifted anchors
         anchors = keras_retinanet.backend.shift(features_shape, self.stride, self.anchors)
-        anchors = keras.backend.expand_dims(anchors, axis=0)
+        anchors = K.expand_dims(anchors, axis=0)
 
         return anchors
 
@@ -68,7 +69,7 @@ class Anchors(keras.layers.Layer):
         }
 
 
-class NonMaximumSuppression(keras.layers.Layer):
+class NonMaximumSuppression(Layer):
     def __init__(self, nms_threshold=0.4, top_k=None, max_boxes=300, *args, **kwargs):
         self.nms_threshold = nms_threshold
         self.top_k         = top_k
@@ -83,19 +84,19 @@ class NonMaximumSuppression(keras.layers.Layer):
         classification = classification[0]
         detections     = detections[0]
 
-        scores          = keras.backend.max(classification, axis=1)
+        scores          = K.max(classification, axis=1)
 
         # selecting best anchors theoretically improves speed at the cost of minor performance
         if self.top_k:
             scores, indices = keras_retinanet.backend.top_k(scores, self.top_k, sorted=False)
-            boxes           = keras.backend.gather(boxes, indices)
-            classification  = keras.backend.gather(classification, indices)
-            detections      = keras.backend.gather(detections, indices)
+            boxes           = K.gather(boxes, indices)
+            classification  = K.gather(classification, indices)
+            detections      = K.gather(detections, indices)
 
         indices = keras_retinanet.backend.non_max_suppression(boxes, scores, max_output_size=self.max_boxes, iou_threshold=self.nms_threshold)
 
-        detections = keras.backend.gather(detections, indices)
-        return keras.backend.expand_dims(detections, axis=0)
+        detections = K.gather(detections, indices)
+        return K.expand_dims(detections, axis=0)
 
     def compute_output_shape(self, input_shape):
         return (input_shape[2][0], None, input_shape[2][2])
@@ -108,17 +109,17 @@ class NonMaximumSuppression(keras.layers.Layer):
         }
 
 
-class UpsampleLike(keras.layers.Layer):
+class UpsampleLike(Layer):
     def call(self, inputs, **kwargs):
         source, target = inputs
-        target_shape = keras.backend.shape(target)
+        target_shape = K.shape(target)
         return keras_retinanet.backend.resize_images(source, (target_shape[1], target_shape[2]))
 
     def compute_output_shape(self, input_shape):
         return (input_shape[0][0],) + input_shape[1][1:3] + (input_shape[0][-1],)
 
 
-class RegressBoxes(keras.layers.Layer):
+class RegressBoxes(Layer):
     def call(self, inputs, **kwargs):
         anchors, regression = inputs
         return keras_retinanet.backend.bbox_transform_inv(anchors, regression)

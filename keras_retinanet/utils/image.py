@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from __future__ import division
-import keras
+from tensorflow.keras import backend as K
 import time
 import numpy as np
 import cv2
@@ -24,8 +24,8 @@ import cv2
 def preprocess_image(x):
     # mostly identical to "https://github.com/fchollet/keras/blob/master/keras/applications/imagenet_utils.py"
     # except for converting RGB -> BGR since we assume BGR already
-    x = x.astype(keras.backend.floatx())
-    if keras.backend.image_data_format() == 'channels_first':
+    x = x.astype(K.floatx())
+    if K.image_data_format() == 'channels_first':
         if x.ndim == 3:
             x[0, :, :] -= 103.939
             x[1, :, :] -= 116.779

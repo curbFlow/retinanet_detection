@@ -48,28 +48,27 @@ from __future__ import division
 
 import warnings
 
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import Activation
-from keras.layers import Dropout
-from keras.layers import Reshape
-from keras.layers import BatchNormalization
-from keras.layers import GlobalAveragePooling2D
-from keras.layers import GlobalMaxPooling2D
-from keras.layers import Conv2D
-from keras import initializers
-from keras import regularizers
-from keras import constraints
-from keras.utils import conv_utils
-from keras.utils.data_utils import get_file
-from keras.engine.topology import get_source_inputs
-from keras.engine import InputSpec
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Activation
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Reshape
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.layers import GlobalAveragePooling2D
+from tensorflow.keras.layers import GlobalMaxPooling2D
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras import initializers
+from tensorflow.keras import regularizers
+from tensorflow.keras import constraints
+from tensorflow.python.keras.utils import conv_utils
+from tensorflow.keras.utils import get_file
+from tensorflow.keras.utils import get_source_inputs
+from tensorflow.keras.layers import InputSpec
 from . import imagenet_utils
 from .imagenet_utils import _obtain_input_shape
 from .imagenet_utils import decode_predictions
-from keras import backend as K
+from tensorflow.keras import backend as K
 import keras_retinanet.models.retinanet
-
 
 BASE_WEIGHT_PATH = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.6/'
 
@@ -373,7 +372,7 @@ def MobileNet(input_shape=None,
         row_axis, col_axis = (0, 1)
     else:
         row_axis, col_axis = (1, 2)
- 
+
     if K.image_data_format() != 'channels_last':
         warnings.warn('The MobileNet family of models is only available '
                       'for the input data format "channels_last" '
@@ -396,7 +395,7 @@ def MobileNet(input_shape=None,
             img_input = Input(tensor=input_tensor, shape=input_shape)
         else:
             img_input = input_tensor
-    outputs=[]
+    outputs = []
     x = _conv_block(img_input, 32, alpha, strides=(2, 2))
     # outputs.append(x)
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1)
@@ -425,7 +424,6 @@ def MobileNet(input_shape=None,
     x = _depthwise_conv_block(x, 1024, alpha, depth_multiplier, block_id=13)
     outputs.append(x)
 
-
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
     if input_tensor is not None:
@@ -434,7 +432,7 @@ def MobileNet(input_shape=None,
         inputs = img_input
 
     # Create model.
-    model = Model(inputs= inputs, outputs= outputs , name='mobilenet')
+    model = Model(inputs=inputs, outputs=outputs, name='mobilenet')
 
     return model
 
@@ -562,9 +560,8 @@ def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
 def MobileNetRetinaNet(inputs, num_classes, alpha, *args, **kwargs):
     image = inputs
 
-    mobilenet = MobileNet(input_tensor = image, alpha=alpha)
+    mobilenet = MobileNet(input_tensor=image, alpha=alpha)
 
     model = keras_retinanet.models.retinanet.retinanet_bbox(
         inputs=inputs, num_classes=num_classes, backbone=mobilenet, *args, **kwargs)
     return model
-

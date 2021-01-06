@@ -17,8 +17,8 @@ limitations under the License.
 import argparse
 import os
 
-import keras
-import keras.preprocessing.image
+import tensorflow.keras as keras
+
 
 import tensorflow as tf
 

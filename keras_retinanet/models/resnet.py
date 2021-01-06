@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras
+from tensorflow.keras.utils import get_file
 import keras_resnet
 import keras_resnet.models
 import keras_retinanet.models.retinanet
@@ -30,10 +30,7 @@ def ResNet50RetinaNet(inputs, num_classes, weights='imagenet', *args, **kwargs):
 
     # load pretrained imagenet weights?
     if weights == 'imagenet':
-        weights_path = keras.applications.imagenet_utils.get_file(
-            'ResNet-50-model.keras.h5',
-            WEIGHTS_PATH_NO_TOP, cache_subdir='models', md5_hash='1e511c75e9ab5c16900652ad1f6044ce'
-        )
+        weights_path = get_file('ResNet-50-model.keras.h5',WEIGHTS_PATH_NO_TOP, cache_subdir='models', md5_hash='1e511c75e9ab5c16900652ad1f6044ce')
     else:
         weights_path = weights
 
