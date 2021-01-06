@@ -15,3 +15,9 @@ train_path = Path to train csv.
 val_path = Path to val csv.  
 classes_path = Path to classes csv.
 ## Model evalulation
+To evaluate the model, run 
+`python3 eval.py`
+
+##Requirements
+This requires TF=2.1.0 and Keras=2.3.1
+
