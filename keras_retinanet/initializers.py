@@ -34,6 +34,6 @@ class PriorProbability(Initializer):
 
     def __call__(self, shape, dtype=None, **kwargs):
         # set bias to -log((1 - p)/p) for foregound
-        result = np.ones(shape, dtype=dtype) * -math.log((1 - self.probability) / self.probability)
+        result = np.ones(shape, dtype=np.float) * -math.log((1 - self.probability) / self.probability)
 
         return result

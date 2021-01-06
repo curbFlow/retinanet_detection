@@ -18,12 +18,14 @@ import numpy as np
 import random
 import threading
 import time
+import tensorflow.keras.backend as K
+import tensorflow as tf
 
 from keras_retinanet.utils.image import preprocess_image, resize_image, random_transform
 from keras_retinanet.utils.anchors import anchor_targets
 
 
-class Generator(object):
+class Generator(tf.compat.v1.keras.utils.Sequence):
     def __init__(
             self,
             image_data_generator,
@@ -103,6 +105,11 @@ class Generator(object):
 
         return image_group, annotations_group
 
+    def on_epoch_end(self):
+        """Method called at the end of every epoch.
+        """
+        random.shuffle(self.groups)
+        pass
     def group_images(self):
         # determine the order of the images
         order = list(range(self.size()))
@@ -119,18 +126,10 @@ class Generator(object):
         if self.shuffle_groups:
             random.shuffle(self.groups)
 
-    def __next__(self):
-        return self.next()
+    def __len__(self):
+        return len(self.groups)
 
-    def next(self):
-        # advance the group index
-        with self.lock:
-            group_index = self.group_index
-            self.group_index = (self.group_index + 1) % len(self.groups)
-            if self.group_index == 0 and self.shuffle_groups:
-                # shuffle groups at end of epoch
-                random.shuffle(self.groups)
-
+    def __getitem__(self,group_index):
         # load images and annotations
         image_group = self.load_image_group(group_index)
         annotations_group = self.load_annotations_group(group_index)
@@ -142,7 +141,7 @@ class Generator(object):
         max_shape = tuple(max(image.shape[x] for image in image_group) for x in range(3))
 
         # construct an image batch object
-        image_batch = np.zeros((self.batch_size,) + max_shape, dtype=keras.backend.floatx())
+        image_batch = np.zeros((self.batch_size,) + max_shape, dtype=K.floatx())
 
         # copy all images to the upper left part of the image batch object
         for image_index, image in enumerate(image_group):
@@ -159,8 +158,8 @@ class Generator(object):
             anchor_states = np.max(labels_group[index], axis=1, keepdims=True)
             regression_group[index] = np.append(regression_group[index], anchor_states, axis=1)
 
-        labels_batch = np.zeros((self.batch_size,) + labels_group[0].shape, dtype=keras.backend.floatx())
-        regression_batch = np.zeros((self.batch_size,) + regression_group[0].shape, dtype=keras.backend.floatx())
+        labels_batch = np.zeros((self.batch_size,) + labels_group[0].shape, dtype=K.floatx())
+        regression_batch = np.zeros((self.batch_size,) + regression_group[0].shape, dtype=K.floatx())
 
         # copy all labels and regression values to the batch blob
         for index, (labels, regression) in enumerate(zip(labels_group, regression_group)):

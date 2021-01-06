@@ -17,8 +17,10 @@ limitations under the License.
 import argparse
 import os
 
-import tensorflow.keras as keras
-
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.layers import Input
+from tensorflow.keras.optimizers import Adam
 
 import tensorflow as tf
 
@@ -38,7 +40,7 @@ def get_session():
 
 
 def create_model(num_classes, feature_size):
-    image = keras.layers.Input((None, None, 3))
+    image = Input((None, None, 3))
     return ResNet18RetinaNet(image, num_classes=num_classes, feature_size=feature_size)
 
 
@@ -72,7 +74,7 @@ if __name__ == '__main__':
     val_path = os.path.abspath(args.val_path)
 
     # create image data generator objects
-    train_image_data_generator = keras.preprocessing.image.ImageDataGenerator(
+    train_image_data_generator = ImageDataGenerator(
         horizontal_flip=True,
     )
 
@@ -86,7 +88,7 @@ if __name__ == '__main__':
         image_max_side=args.max_side
     )
 
-    test_image_data_generator = keras.preprocessing.image.ImageDataGenerator()
+    test_image_data_generator = ImageDataGenerator()
 
     # create a generator for testing data
     test_generator = CSVGenerator(
@@ -107,9 +109,10 @@ if __name__ == '__main__':
     model.compile(
         loss={
             'regression': keras_retinanet.losses.smooth_l1(),
-            'classification': keras_retinanet.losses.focal()
+            'classification': keras_retinanet.losses.focal(),
+            'nms': None
         },
-        optimizer=keras.optimizers.adam(lr=1e-4, clipnorm=1e-4)
+        optimizer=Adam(lr=1e-4, clipnorm=1e-4)
         # optimizer=keras.optimizers.RMSprop(lr=1e-5)
     )
 
@@ -125,8 +128,8 @@ if __name__ == '__main__':
     final_save_fname = os.path.join(model_dir, "{}_final.h5".format(model_name))
 
     # start training
-    history = model.fit_generator(
-        generator=train_generator,
+    history = model.fit(
+        x=train_generator,
         steps_per_epoch=train_generator.size() // (args.batch_size),
         epochs=1000,
         verbose=1,
@@ -134,12 +137,12 @@ if __name__ == '__main__':
         validation_data=test_generator,
         validation_steps=test_generator.size() // (args.batch_size),
         callbacks=[
-            keras.callbacks.ModelCheckpoint(
+            ModelCheckpoint(
                 checkpoint_fname, monitor='val_loss', verbose=1, save_best_only=True),
-            keras.callbacks.ReduceLROnPlateau(
+            ReduceLROnPlateau(
                 monitor='loss', factor=0.25, patience=5, verbose=1, mode='auto', epsilon=0.0001, cooldown=0,
                 min_lr=1e-10),
-            keras.callbacks.EarlyStopping(
+            EarlyStopping(
                 monitor='val_loss', min_delta=0, patience=10, verbose=0, mode='auto')
         ],
     )

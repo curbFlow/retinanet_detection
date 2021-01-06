@@ -15,8 +15,7 @@ limitations under the License.
 """
 
 import tensorflow
-import keras
-import keras_retinanet.backend
+
 
 
 def top_k(*args, **kwargs):
