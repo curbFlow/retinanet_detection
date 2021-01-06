@@ -2,7 +2,7 @@ import csv
 import numpy as np
 import cv2
 import pandas as pd
-import tensorflow.keras as keras
+import keras
 from keras_retinanet.models.resnet import custom_objects
 from keras_retinanet.utils.image import preprocess_image
 from tqdm import tqdm
