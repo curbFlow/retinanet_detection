@@ -28,9 +28,9 @@ if __name__ == '__main__':
     for frame in frames:
         subsampled_df = subsampled_df.append(dfs[frame])
 
-    subsampled_df['x1'] = pd.to_numeric(subsampled_df['x1'])
-    subsampled_df['y1'] = pd.to_numeric(subsampled_df['y1'])
-    subsampled_df['x2'] = pd.to_numeric(subsampled_df['x2'])
-    subsampled_df['y2'] = pd.to_numeric(subsampled_df['y2'])
+    subsampled_df['x1'] = pd.to_numeric(subsampled_df['x1'], downcast='integer')
+    subsampled_df['y1'] = pd.to_numeric(subsampled_df['y1'], downcast='integer')
+    subsampled_df['x2'] = pd.to_numeric(subsampled_df['x2'], downcast='integer')
+    subsampled_df['y2'] = pd.to_numeric(subsampled_df['y2'], downcast='integer')
 
     subsampled_df.to_csv(args.out_path, index=False, header=False)
