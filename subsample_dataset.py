@@ -1,6 +1,22 @@
 import argparse
 from random import shuffle
 
+import pandas as pd
+
+class StringConverter(dict):
+
+    def __contains__(self, item):
+
+        return True
+
+    def __getitem__(self, item):
+
+        return str
+
+    def get(self, default=None):
+
+        return str
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Simple script to subsample a csv dataset')
@@ -18,7 +34,7 @@ if __name__ == '__main__':
     import pandas as pd
 
     args = parse_args()
-    label_db = pd.read_csv(args.csv_path, names=['Frame', 'x1', 'y1', 'x2', 'y2', 'Label'])
+    label_db = pd.read_csv(args.csv_path, names=['Frame', 'x1', 'y1', 'x2', 'y2', 'Label'],converters=StringConverter())
     dfs = dict(tuple(label_db.groupby('Frame')))
     df_keys_list = list(dfs.keys())
     shuffle(df_keys_list)
@@ -28,9 +44,5 @@ if __name__ == '__main__':
     for frame in frames:
         subsampled_df = subsampled_df.append(dfs[frame])
 
-    subsampled_df['x1'] = pd.to_numeric(subsampled_df['x1'], downcast='integer')
-    subsampled_df['y1'] = pd.to_numeric(subsampled_df['y1'], downcast='integer')
-    subsampled_df['x2'] = pd.to_numeric(subsampled_df['x2'], downcast='integer')
-    subsampled_df['y2'] = pd.to_numeric(subsampled_df['y2'], downcast='integer')
-
+    print (subsampled_df)
     subsampled_df.to_csv(args.out_path, index=False, header=False)
